@@ -6,6 +6,7 @@ import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js
 import { BadRequest } from "./utils/AppError.js";
 import logger from "./logger/pino.logger.js";
 import mongoose from "mongoose";
+import { responseMiddleware } from "./middlewares/response.middleware.js";
 
 /**
  * Express Application Configuration
@@ -45,6 +46,9 @@ import mongoose from "mongoose";
  * ```
  */
 const app = express();
+
+// TODO: Add documentation for this middleware usage
+app.use(responseMiddleware)
 
 /**
  * Security & Parsing Middleware Stack
@@ -140,7 +144,11 @@ app.get("/health", (req: Request, res: Response) => {
   };
 
   // Return 503 if database disconnected (failing health check)
-  return res.status(healthcheck.database === 'connected' ? 200 : 503).json(healthcheck);
+  if (healthcheck.database === 'disconnected') {
+    throw new Error("Database connection failed")
+  } else {
+    return res.ok(healthcheck, "Server is healthy");
+  }
 });
 
 /**

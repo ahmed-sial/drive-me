@@ -1,20 +1,6 @@
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 
 /**
- * Type representing an async Express request handler.
- * 
- * This alias clarifies the expected signature for async middleware/controller functions.
- * Using `Promise<any>` allows flexible return types while maintaining async compatibility.
- * 
- * @see asyncHandler
- */
-type AsyncFunction = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => Promise<any>;
-
-/**
  * Express Async Error Wrapper Middleware
  * ------------------------------------------------------------
  * Safely wraps async Express handlers to automatically forward promise rejections
