@@ -2,7 +2,16 @@
 
 ## 📋 Overview
 
-- TODO
+A fully-featured, production-ready Express.js API starter built with TypeScript. This project implements a complete authentication system with user registration, login, logout, and real-time WebSocket capabilities. The architecture follows best practices for scalability, maintainability, and security.
+
+**Key Features:**
+- 🔐 **Complete Authentication System** - JWT-based auth with cookie storage
+- 🏗️ **Layered Architecture** - Controllers, Services, Models, DTOs separation
+- ✅ **Type Safety** - Full TypeScript support with declaration merging
+- 🛡️ **Security First** - Password hashing, HTTP-only cookies, input validation
+- 📝 **Comprehensive Documentation** - JSDoc comments throughout codebase
+- 🔌 **Real-time Ready** - WebSocket integration via socketId field
+- 🎯 **Standardized Responses** - Consistent API response format
 
 ---
 
@@ -16,11 +25,47 @@
 
 ### Installation
 
-- TODO
+```bash
+# Clone the repository
+git clone <repository-url>
+cd express-ts-api
 
----
+# Install dependencies
+npm install
 
-## 📁 Project Structure
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+npm start
+```
+
+### Environment Variables (.env)
+
+```bash
+# Server Configuration
+NODE_ENV=development
+PORT=5000
+
+# Database
+MONGO_URI=mongodb://localhost:27017/auth-api
+
+# JWT Authentication
+JWT_SECRET=your-super-secret-key-change-in-production
+
+# Logging
+LOG_LEVEL=info
+
+# Optional: Production overrides
+CORS_ORIGIN=https://yourdomain.com
+```
+
+### Project Structure
 
 ```
 src/
@@ -28,112 +73,172 @@ src/
 ├── server.ts              # Server bootstrap & process management
 ├── config/
 │   ├── db.ts              # MongoDB connection manager
-│   └── env.ts             # Environment validation (recommended addition)
+│   └── env.ts             # Environment validation
 ├── middleware/
 │   ├── error.middleware.ts # Global error handling
-│   └── asyncHandler.middleware.ts # Async error wrapper
+│   ├── asyncHandler.middleware.ts # Async error wrapper
+│   └── response.middleware.ts # Standardized response helpers
 ├── utils/
 │   └── AppError.ts       # Custom error classes
 ├── logger/
 │   └── pino.logger.ts    # Structured logging configuration
-├── routes/               # API route definitions
-├── controllers/          # Request handlers
-├── services/             # Business logic
-├── models/               # Database schemas
-└── types/                # TypeScript type definitions
+├── routes/
+│   └── userAuth.routes.ts # Authentication endpoints
+├── controllers/
+│   └── userAuth.controller.ts # Authentication request handlers
+├── services/
+│   └── user.service.ts   # User business logic
+├── models/
+│   └── user.model.ts     # Mongoose schema & methods
+├── interfaces/
+│   └── IUser.ts          # User entity interface
+├── dto/
+│   ├── registerUser.dto.ts # Registration data transfer object
+│   └── loginUser.dto.ts    # Login data transfer object
+├── types/
+│   ├── express.d.ts      # Express type extensions
+│   └── response.type.ts  # API response interface
+└── docs/                 # Documentation (generated)
 ```
 
----
+### Core Features
 
-## 🔧 Core Features
+#### Robust Error Handling System
 
-### 🛡️ Robust Error Handling System
+A centralized pipeline ensuring consistent API responses and preventing unhandled exceptions.
 
-A comprehensive error handling pipeline that ensures consistent API responses and prevents unhandled exceptions.
+#### Components
 
-#### Key Components
+- **AppError** — Base HTTP error abstraction
 
-* **AppError** - Base error class with HTTP semantics
-* **asyncHandler** - Automatic promise rejection handling
-* **Global Error Middleware** - Centralized error processing
-* **MongoDB Error Normalization** - Database errors to HTTP errors
+- **asyncHandler** — Automatic promise rejection capture
 
-#### Error Types Included
+- **Global Error Middleware** — Central error processor
 
-* 400 BadRequest - Invalid client input
-* 401 Unauthorized - Authentication required
-* 403 Forbidden - Insufficient permissions
-* 404 NotFound - Resource not found
-* 409 Conflict - Resource conflicts
-* 422 ValidationProblem - Schema validation errors
-* 500 InternalServerError - Server failures
-* 501 NotImplemented - Unsupported features
-* 503 ServiceUnavailable - Temporary outages
+- **MongoDB Error Normalization** — Converts DB errors → HTTP errors
 
-#### Example Usage
+| Code | Name                | Purpose                  |
+| ---- | ------------------- | ------------------------ |
+| 400  | BadRequest          | Invalid client input     |
+| 401  | Unauthorized        | Authentication required  |
+| 403  | Forbidden           | Insufficient permissions |
+| 404  | NotFound            | Resource not found       |
+| 409  | Conflict            | Resource conflict        |
+| 422  | ValidationProblem   | Schema validation errors |
+| 500  | InternalServerError | Server failure           |
+| 501  | NotImplemented      | Unsupported feature      |
+| 503  | ServiceUnavailable  | Temporary outage         |
 
+#### Example
 ```ts
 import { BadRequest, NotFound } from './utils/AppError.js';
 import asyncHandler from './middleware/asyncHandler.middleware.js';
 
 export const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
-  
+
   if (!user) {
     throw new NotFound('User not found');
   }
-  
-  if (user.isBanned) {
-    throw new Forbidden('User account is banned');
-  }
-  
-  res.json(user);
+
+  res.ok(user, "User retrieved successfully");
 });
 ```
 
----
+### Authentication System
 
-### 📊 Structured Logging
+#### Register
+```
+POST /api/auth/register
+```
+```json
+{
+  "email": "user@example.com",
+  "fullName": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "password": "SecurePass123!"
+}
+```
 
-Production-grade logging with Pino.js for high-performance structured logging.
+#### Login
+
+```
+POST /api/auth/login
+```
+
+```json
+
+{
+  "email": "user@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+
+Sets cookie:
+
+```
+token=<JWT> (HTTP-Only)
+```
+
+#### Logout
+
+```
+POST /api/auth/logout
+```
+
+
+Clears authentication cookie.
+
+### Security Features
+
+- bcrypt hashing (10 salt rounds)
+
+- JWT authentication
+
+- HTTP-only cookies
+
+- express-validator input validation
+
+- Password excluded from responses
+
+- Email uniqueness enforcement
+
+- Timing-safe password comparison
+
+### Structured Logging
+
+Powered by Pino.js
 
 #### Features
 
-* Environment-aware: Pretty logs for development, JSON for production
-* Automatic redaction: Sensitive data (tokens, passwords, PII) automatically masked
-* Request/Response logging: Complete request lifecycle tracking
-* Performance metrics: Response time tracking
+- Pretty logs in development
+
+- JSON logs in production
+
+- Automatic sensitive data redaction
+
+- Request lifecycle tracking
+
+- Response time metrics
 
 #### Configuration
 
-```js
-// Log levels (controlled by LOG_LEVEL env var)
-TRACE → DEBUG → INFO → WARN → ERROR → FATAL
-
-// Production logging to file with rotation
+```bash
+# Production
 LOG_LEVEL=info
 NODE_ENV=production
 
-// Development with verbose output
+# Development
 LOG_LEVEL=debug
 NODE_ENV=development
 ```
 
----
+### Database Integration
 
-### 🗄️ Database Integration
-
-Robust MongoDB connection management with Mongoose ODM.
-
-#### Connection Features
-
-* Connection pooling: Optimal performance under load
-* Graceful shutdown: Clean connection termination
-* Health monitoring: Real-time database status
-* Error resilience: Automatic reconnection handling
-
-#### Connection Options (Optional)
-
+#### MongoDB (Mongoose)
 ```ts
 await mongoose.connect(process.env.MONGO_URI, {
   maxPoolSize: 10,
@@ -143,195 +248,185 @@ await mongoose.connect(process.env.MONGO_URI, {
 });
 ```
 
----
+#### User Model
 
-## 🏥 Health Monitoring
+- First name ≥ 3 chars
 
-**Endpoint:** `GET /health`
+- Password ≥ 8 chars
 
+- Email format validation
+
+- `select: false` password field
+
+- `comparePassword()`
+
+- `generateAuthToken()`
+
+- Auto password removal in serialization
+
+### API Endpoints
+
+#### Authentication Routes
+
+| Method | Endpoint  | Description    | Auth |
+| ------ | --------- | -------------- | ---- |
+| POST   | /register | Create account | No   |
+| POST   | /login    | Login user     | No   |
+| POST   | /logout   | Logout         | No   |
+
+#### Example
+```bash
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "fullName": { "firstName": "Test" },
+    "password": "Test12345"
+  }'
+```
+
+### Architecture
+
+#### Layer Responsibilities
+
+| Layer       | Purpose              |
+| ----------- | -------------------- |
+| routes      | Validation + mapping |
+| controllers | Request handling     |
+| services    | Business logic       |
+| models      | Database             |
+| dto         | Data contracts       |
+| interfaces  | Type definitions     |
+
+### Health Monitoring
+```
+GET /health
+```
 ```json
 {
+  "status": "success",
   "uptime": 3600.25,
   "message": "OK",
-  "timestamp": 1678891234567,
+  "timestamp": "2024-01-15T10:30:00.000Z",
   "database": "connected"
 }
 ```
 
-**Response Codes**
+| Status | Meaning               |
+| ------ | --------------------- |
+| 200    | Healthy               |
+| 503    | Database disconnected |
 
-* 200 OK: System healthy, database connected
-* 503 Service Unavailable: Database disconnected
-
----
-
-## 🔐 Security Features
-
-* CORS: Configurable Cross-Origin Resource Sharing
-* Cookie Parsing: Secure cookie handling
-* Input Validation: Request body validation via middleware
-* Sensitive Data Protection: Automatic log redaction
-* Rate Limiting: Ready for implementation (see Extensions)
-
----
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory:
-
-```bash
-# Server
-NODE_ENV=development
-PORT=5000
-
-# Database
-MONGO_URI=mongodb://username:password@localhost:27017/database?authSource=admin
-
-# Logging
-LOG_LEVEL=info
-
-# Security (add as needed)
-JWT_SECRET=your-super-secret-jwt-key
-JWT_EXPIRES_IN=7d
+### Security Implementation
+#### Password Hashing
+```ts
+const hashedPassword = await userModel.hashPassword(password);
+const valid = await user.comparePassword(inputPassword);
 ```
 
-### Development vs Production
+#### JWT
+```ts
+const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
 
-| Setting          | Development            | Production           |
-| ---------------- | ---------------------- | -------------------- |
-| Logging          | Colored console output | JSON to file         |
-| Error Details    | Full stack traces      | Generic messages     |
-| Database Indexes | Auto-created           | Pre-built            |
-| Port             | 5000                   | Environment variable |
-| CORS             | Open                   | Restricted origins   |
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict'
+});
+```
 
----
+#### Validation
+```ts
+[
+  body("email").isEmail(),
+  body("fullName.firstName").isLength({ min: 3 }),
+  body("password").isLength({ min: 8 })
+]
+```
 
-## 🛠️ Development Scripts
-
+#### TypeScript Configuration
 ```json
 {
-  "scripts": {
-    "dev": "nodemon src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   }
 }
 ```
 
----
-
-## 📚 API Design Principles
-
-### RESTful Conventions
-
-* Resource-based URLs (`/api/v1/users`)
-* Proper HTTP methods (GET, POST, PUT, PATCH, DELETE)
-* Consistent response formats
-* Versioned APIs (`/api/v1/`, `/api/v2/`)
-
-### Error Response Format
-
+#### Scripts
 ```json
 {
-  "status": "fail",
-  "message": "Invalid email format",
-  "errorType": "Bad Request",
-  "details": [
-    {
-      "field": "email",
-      "message": "Invalid email format",
-      "value": "invalid-email"
-    }
-  ],
-  "timestamp": "2024-01-15T10:30:00.000Z"
+  "dev": "tsx watch src/server.ts",
 }
 ```
 
-### Success Response Format
+### API Response Format
+
+#### Success
 
 ```json
 {
-  "status": "success",
-  "data": {
-    "user": {
-      "id": "507f1f77bcf86cd799439011",
-      "name": "John Doe",
-      "email": "john@example.com"
-    }
+  "success": true,
+  "message": "User created successfully",
+  "data": {},
+  "meta": { "timestamp": "ISO_DATE" }
+}
+```
+
+#### Error
+
+```json
+{
+  "success": false,
+  "message": "Invalid credentials",
+  "error": {
+    "name": "Unauthorized",
+    "statusCode": 401,
+    "details": "Email or password incorrect"
   },
-  "meta": {
-    "total": 1,
-    "page": 1,
-    "limit": 10
-  }
+  "meta": { "timestamp": "ISO_DATE" }
 }
 ```
 
----
-
-## 🔄 Extensions & Integrations
-
-### Recommended Additions
-
-```bash
-npm install jsonwebtoken bcryptjs
-```
-
----
-
-## 🚨 Error Prevention & Debugging
-
-### Database Connection Issues
-
-```bash
-mongosh --eval "db.adminCommand('ping')"
-echo $MONGO_URI
-```
-
-### Memory Leaks
+### Logging Setup
 
 ```ts
-import heapdump from 'heapdump';
-process.on('SIGUSR2', () => {
-  heapdump.writeSnapshot();
+import pino from 'pino';
+import pinoHttp from 'pino-http';
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  redact: ['password', 'token', 'authorization'],
+  transport: process.env.NODE_ENV === 'development'
+    ? { target: 'pino-pretty' }
+    : undefined
 });
+
+app.use(pinoHttp({ logger }));
 ```
 
-### Unhandled Rejections
+### Troubleshooting
 
-```ts
-process.on('unhandledRejection', (err) => {
-  logger.error('Unhandled Rejection:', err);
-  process.exit(1);
-});
-```
-
----
-
-## 📊 Logging & Monitoring Setup
-
-## Code Standards
-
-* TypeScript strict mode
-* Follow existing error handling patterns
-* Add comprehensive JSDoc comments
-* Include integration tests for new endpoints
-* Update documentation for API changes
-
----
-
-## 🆘 Support
+| Issue                | Cause           | Solution           |
+| -------------------- | --------------- | ------------------ |
+| JWT key missing      | No env variable | Set JWT_SECRET     |
+| Invalid credentials  | Wrong password  | Check hashing      |
+| DB connection failed | Bad URI         | Verify MongoDB     |
+| Duplicate user       | Same email      | Enforce uniqueness |
 
 ### Emergency Procedures
 
-* Service Down: Check database connection and restart service
-* Memory Spike: Force restart and investigate with heap dump
-* Security Breach: Rotate all secrets immediately
-* Data Corruption: Restore from backup and investigate logs
+- Restart service
 
----
+- Rotate JWT secret
 
-**Built for scalable, maintainable API development**
+- Restore backup
+
+- Inspect logs

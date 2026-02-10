@@ -1,3 +1,4 @@
+import type { ValidationError } from "express-validator";
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
 
 /**
@@ -73,13 +74,13 @@ export class AppError extends Error {
 
 
   /** Structured validation details */
-  public readonly details?: IErrorDetail[];
+  public readonly details?: IErrorDetail[] | ValidationError[];
 
   constructor(
     message: string,
     statusCode: number = 500,
     errorType: string = getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
-    details?: IErrorDetail[],
+    details?: IErrorDetail[] | ValidationError[],
     isOperational: boolean = true,
   ) {
     super(message)
@@ -104,7 +105,7 @@ export class AppError extends Error {
 * - Business rule violation
 */
 export class BadRequest extends AppError {
-  constructor(message: string, details?: IErrorDetail[]) {
+  constructor(message: string, details?: IErrorDetail[] | ValidationError[]) {
     super(message, StatusCodes.BAD_REQUEST, getReasonPhrase(StatusCodes.BAD_REQUEST), details)
   }
 }
@@ -151,7 +152,7 @@ export class Conflict extends AppError {
 * Typically used for schema validation errors.
 */
 export class ValidationProblem extends AppError {
-  constructor(details: IErrorDetail[]) {
+  constructor(details?: IErrorDetail[]) {
     super("Validation failed", StatusCodes.UNPROCESSABLE_ENTITY, getReasonPhrase(StatusCodes.UNPROCESSABLE_ENTITY), details)
   }
 }

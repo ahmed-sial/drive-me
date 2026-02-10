@@ -7,6 +7,7 @@ import { BadRequest } from "./utils/AppError.js";
 import logger from "./logger/pino.logger.js";
 import mongoose from "mongoose";
 import { responseMiddleware } from "./middlewares/response.middleware.js";
+import userAuthRoutes from "./routes/userAuth.routes.js";
 
 /**
  * Express Application Configuration
@@ -60,6 +61,7 @@ app.use(responseMiddleware)
 app.use(cors()); // Enable Cross-Origin Resource Sharing
 app.use(express.json()); // Parse JSON request bodies
 app.use(cookieParser()); // Parse Cookie header into req.cookies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 
 /**
  * Request Logging Middleware
@@ -169,6 +171,7 @@ app.get("/health", (req: Request, res: Response) => {
  * ```
  */
 
+app.use("/api/v1/auth", userAuthRoutes);
 
 
 /**
