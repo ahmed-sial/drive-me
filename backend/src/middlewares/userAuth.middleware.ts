@@ -6,6 +6,20 @@ import jwt from "jsonwebtoken"
 import type TokenInfo from "../types/tokenInfo.type.js";
 import blacklistToken from "../models/blacklistToken.model.js";
 
+/**
+ * Middleware to authenticate users using a JSON Web Token (JWT).
+ * 
+ * This function attempts to extract a token from the request cookies or the 
+ * Authorization header. It then verifies the token's validity and ensures 
+ * it has not been blacklisted.
+ * A new attribute named 'user' is also added in request object to store user data.
+ * 
+ * @param req - The Express request object.
+ * @param res - The Express response object.
+ * @param next - The next middleware function in the stack.
+ * @throws {Unauthorized} If no token is provided or if the token is blacklisted.
+ */
+
 const authenticateUserByToken = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1]
   if (!token)

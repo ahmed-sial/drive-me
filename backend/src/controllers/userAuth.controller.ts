@@ -212,27 +212,24 @@ const login = asyncHandler(async (req: Request, res: Response) => {
  * @returns {Promise<void>} Responds with:
  *   - HTTP 200 OK status
  *   - Success message: "User logged out successfully"
+ *   - Adds token to blacklist
  *   - Clears the "token" cookie from client
  * @description
  * Logout flow:
  * 1. Clear the authentication cookie client-side
- * 2. Return success response
- * @note
- * - This is a client-side logout (server may want to implement token blacklisting)
- * - For stateless JWT, server cannot invalidate token until expiration
- * - Consider adding server-side token invalidation for enhanced security
- * @security
- * - Clears cookie but JWT remains valid until expiration
- * - For immediate invalidation, implement token blacklist or use sessions
+ * 2. Add token to blacklist
+ * 3. Return success response
  */
 const logout = asyncHandler(async (req: Request, res: Response) => {
-  // Clear the authentication cookie
-  // In production, ensure cookie options match those used in login
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1]
+  // Check if token is provided
   if (!token) {
+    // If no token is provided, return success response
     res.ok("User logged out successfully")
   }
+  // Add token to blacklist
   await blacklistToken.create({ token })
+  // Clear the authentication cookie
   res.clearCookie("token")
 
   // Inform client of successful logout
