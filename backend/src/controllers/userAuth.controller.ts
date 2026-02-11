@@ -6,6 +6,7 @@ import { BadRequest, InternalServerError, NotFound, Unauthorized, ValidationProb
 import userService from "../services/user.service.js";
 import { validationResult } from "express-validator";
 import type LoginUserDto from "../dto/loginUser.dto.js";
+import blacklistToken from "../models/blacklistToken.model.js";
 
 /**
  * @file userAuth.controller.ts
@@ -227,6 +228,11 @@ const login = asyncHandler(async (req: Request, res: Response) => {
 const logout = asyncHandler(async (req: Request, res: Response) => {
   // Clear the authentication cookie
   // In production, ensure cookie options match those used in login
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1]
+  if (!token) {
+    res.ok("User logged out successfully")
+  }
+  await blacklistToken.create({ token })
   res.clearCookie("token")
 
   // Inform client of successful logout

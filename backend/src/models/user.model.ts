@@ -183,7 +183,7 @@ userSchema.methods.generateAuthToken = function () {
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT key is not defined. Please ensure it is defined in the environment variables.")
   }
-  const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET)
+  const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: "24h" })
   return token
 }
 
