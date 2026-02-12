@@ -11,6 +11,7 @@
  */
 
 import 'express';
+import type IUser from '../interfaces/IUser.ts';
 
 /**
  * Global Express namespace extensions
@@ -76,6 +77,10 @@ declare global {
        * res.noContent("Cache cleared successfully");
        */
       noContent: (message?: string) => Response;
+    }
+
+    interface Request {
+      user: IUser
     }
   }
 }

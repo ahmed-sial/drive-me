@@ -3,11 +3,11 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import type { NextFunction, Request, Response } from "express";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
-import { BadRequest } from "./utils/AppError.js";
 import logger from "./logger/pino.logger.js";
 import mongoose from "mongoose";
 import { responseMiddleware } from "./middlewares/response.middleware.js";
 import userAuthRoutes from "./routes/userAuth.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 /**
  * Express Application Configuration
@@ -172,6 +172,7 @@ app.get("/health", (req: Request, res: Response) => {
  */
 
 app.use("/api/v1/auth", userAuthRoutes);
+app.use("/api/v1/users", userRoutes);
 
 
 /**
