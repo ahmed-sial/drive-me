@@ -62,10 +62,33 @@ const router = express.Router()
 router.post(
   "/register",
   [
-    body("email").isEmail().withMessage("Invalid email"),
-    body("fullName.firstName").isLength({ min: 3 }).withMessage("First name must be at least 3 characters long"),
-    // body("fullName.lastName").isLength({ min: 3 }).withMessage("Last name must be at least 3 characters long"),
-    body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters long")
+    body("email")
+      .exists()
+      .withMessage("Email is required")
+      .isString()
+      .withMessage("Email must be a string")
+      .isEmail()
+      .withMessage("Invalid email"),
+    body("fullName.firstName")
+      .exists()
+      .withMessage("First name is required")
+      .isString()
+      .withMessage("First name must be a string")
+      .isLength({ min: 3 })
+      .withMessage("First name must be at least 3 characters long"),
+    body("fullName.lastName")
+      .if(body("fullName.lastName").exists())
+      .isString()
+      .withMessage("Last name must be a string")
+      .isLength({ min: 3 })
+      .withMessage("Last name must be at least 3 characters long"),
+    body("password")
+      .exists()
+      .withMessage("Password is required")
+      .isString()
+      .withMessage("Password must be a string")
+      .isLength({ min: 8 })
+      .withMessage("Password must be at least 8 characters long")
   ],
   userAuthController.register
 )
@@ -113,8 +136,20 @@ router.post(
 router.post(
   "/login",
   [
-    body("email").isEmail().withMessage("Invalid email"),
-    body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters long")
+    body("email")
+      .exists()
+      .withMessage("Email is required")
+      .isString()
+      .withMessage("Email must be a string")
+      .isEmail()
+      .withMessage("Invalid email"),
+    body("password")
+      .exists()
+      .withMessage("Password is required")
+      .isString()
+      .withMessage("Password must be a string")
+      .isLength({ min: 8 })
+      .withMessage("Password must be at least 8 characters long")
   ],
   userAuthController.login
 )

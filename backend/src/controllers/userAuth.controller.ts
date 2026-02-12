@@ -225,7 +225,7 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
   // Check if token is provided
   if (!token) {
     // If no token is provided, return success response
-    res.ok("User logged out successfully")
+    res.ok(null, "User logged out successfully")
   }
   // Add token to blacklist
   await blacklistToken.create({ token })
@@ -233,7 +233,7 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
   res.clearCookie("token")
 
   // Inform client of successful logout
-  res.ok("User logged out successfully")
+  res.ok(null, "User logged out successfully")
 })
 
 /**

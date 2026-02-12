@@ -18,49 +18,8 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs";
 import type { HydratedDocument, Model } from "mongoose";
 import type IUser from "../interfaces/IUser.js";
-
-/**
- * User instance methods interface
- * @interface IUserMethods
- * @description Defines methods available on user document instances
- */
-export interface IUserMethods {
-  /**
-   * Generates JWT authentication token for the user
-   * @method generateAuthToken
-   * @returns {string} Signed JWT token containing user ID
-   * @throws {Error} If JWT_SECRET environment variable is not defined
-   * @security Uses HS256 algorithm with environment secret
-   */
-  generateAuthToken: () => string
-
-  /**
-   * Compares provided password with stored hash
-   * @method comparePassword
-   * @param {string} password - Plain text password to verify
-   * @returns {Promise<boolean>} True if password matches, false otherwise
-   * @security Uses timing-safe bcrypt comparison
-   */
-  comparePassword: (password: string) => Promise<boolean>
-}
-
-/**
- * User model static methods interface
- * @interface UserModel
- * @extends {Model<IUser, {}, IUserMethods>}
- * @description Extends Mongoose Model with static methods
- */
-interface UserModel extends Model<IUser, {}, IUserMethods> {
-  /**
-   * Hashes a plain text password using bcrypt
-   * @static
-   * @method hashPassword
-   * @param {string} password - Plain text password to hash
-   * @returns {Promise<string>} Hashed password with salt
-   * @security Uses 10 salt rounds (configurable for performance/security balance)
-   */
-  hashPassword: (password: string) => Promise<string>
-}
+import type IGenericModel from "../interfaces/IGenericModel.js";
+import type IMethods from "../interfaces/IMethods.js";
 
 /**
  * User schema definition with validation rules and options
@@ -95,7 +54,7 @@ interface UserModel extends Model<IUser, {}, IUserMethods> {
  * @options
  * - timestamps: true - Automatically adds createdAt and updatedAt fields
  */
-const userSchema = new Schema<IUser, UserModel, IUserMethods>({
+const userSchema = new Schema<IUser, IGenericModel<IUser, {}, IMethods>, IMethods>({
   fullName: {
     firstName: {
       type: String,
@@ -119,6 +78,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>({
     type: String,
     required: true,
     select: false,
+    trim: true,
     min: [8, "Password must be at least 8 characters long"],
   },
   socketId: {
@@ -247,7 +207,7 @@ userSchema.statics.hashPassword = async function (password: string) {
  * const foundUser = await userModel.findOne({ email });
  * ```
  */
-const userModel = model<IUser, UserModel>("user", userSchema)
+const userModel = model<IUser, IGenericModel<IUser, {}, IMethods>>("user", userSchema)
 
 /**
  * User Document type for TypeScript
@@ -255,6 +215,6 @@ const userModel = model<IUser, UserModel>("user", userSchema)
  * @description TypeScript type representing a hydrated Mongoose document
  * with both IUser properties and IUserMethods instance methods
  */
-export type UserDocument = HydratedDocument<IUser, IUserMethods>;
+export type UserDocument = HydratedDocument<IUser, IMethods>;
 
 export default userModel

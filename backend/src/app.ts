@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { responseMiddleware } from "./middlewares/response.middleware.js";
 import userAuthRoutes from "./routes/userAuth.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import captainAuthRoutes from "./routes/captain.routes.js";
 
 /**
  * Express Application Configuration
@@ -171,8 +172,9 @@ app.get("/health", (req: Request, res: Response) => {
  * ```
  */
 
-app.use("/api/v1/auth", userAuthRoutes);
+app.use("/api/v1/auth/users", userAuthRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/auth/captains", captainAuthRoutes);
 
 
 /**
